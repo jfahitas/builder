@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Partnership Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #500000 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: #ffcccc;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .partnership-zone {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .partnership-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05));
+            pointer-events: none;
+        }
+
+        .mutual-aid {
+            border-color: #ff6b6b;
+            animation: pulseRed 2s infinite;
+        }
+
+        .strategic {
+            border-color: #4ecdc4;
+            animation: pulseTeal 2s infinite;
+        }
+
+        @keyframes pulseRed {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 107, 107, 0.6); }
+        }
+
+        @keyframes pulseTeal {
+            0%, 100% { box-shadow: 0 0 20px rgba(78, 205, 196, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(78, 205, 196, 0.6); }
+        }
+
+        .zone-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20පx;
+            gap: 15px;
+        }
+
+        .zone-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #500000, #800000);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .zone-title {
+            flex: 1;
+        }
+
+        .zone-title h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .zone-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .drop-zone {
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.02);
+        }
+
+        .scenario-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .scenario-card {
+            background: linear-gradient(135deg, #500000, #700000);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px 20px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            max-width: 300px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .scenario-card::after {
+            content: '↕';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.3;
+            font-size: 1.2rem;
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            background: linear-gradient(135deg, #600000, #900000);
+        }
+
+        .scenario-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .dropped-card {
+            margin-bottom: 10px;
+            animation: dropIn 0.3s ease;
+        }
+
+        @keyframes dropIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .score-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffd93d, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .check-button {
+            background: linear-gradient(135deg, #500000, #800000);
+            color: white;
+            border: 2px solid rgba(255, 107, 107, 0.5);
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .check-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .check-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .check-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .feedback {
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
+            border: 2px solid #4ecdc4;
+        }
+
+        .feedback.incorrect {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
+            border: 2px solid #ff6b6b;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #ffd93d;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .concept-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .toggle-btn {
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #500000, #800000);
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .score-display {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 Strategic Partnership Builder</h1>
+            <p class="subtitle">Master the Art of Emergency Management Partnerships</p>
+        </div>
+
+        <div class="info-box">
+            <strong>🎯 Mission:</strong> Sort scenarios into the correct partnership type. Mutual Aid is for crisis response, Strategic Partnerships build long-term capability!
+        </div>
+
+        <div class="concept-toggle">
+            <button class="toggle-btn active" onclick="showConcept('game')">🎮 Interactive Game</button>
+            <button class="toggle-btn" onclick="showConcept('learn')">📚 Learn Concepts</button>
+        </div>
+
+        <div id="gameMode">
+            <div class="score-panel">
+                <h3>Your Partnership Score</h3>
+                <div class="score-display">
+                    <div class="score-item">
+                        <div class="score-number" id="correct">0</div>
+                        <div class="score-label">Correct</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-number" id="total">8</div>
+                        <div class="score-label">Total</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-number" id="percentage">0%</div>
+                        <div class="score-label">Accuracy</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="scenario-cards" id="scenarioCards">
+                <!-- Cards will be generated by JavaScript -->
+            </div>
+
+            <div class="game-board">
+                <div class="partnership-zone mutual-aid">
+                    <div class="zone-header">
+                        <div class="zone-icon">🆘</div>
+                        <div class="zone-title">
+                            <h2>Mutual Aid</h2>
+                            <p class="zone-subtitle">"When we need help, who can we call?"</p>
+                        </div>
+                    </div>
+                    <div class="drop-zone" id="mutualAidZone" ondrop="drop(event, 'mutual-aid')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                        <p style="opacity: 0.5; text-align: center;">Drop crisis response scenarios here</p>
+                    </div>
+                </div>
+
+                <div class="partnership-zone strategic">
+                    <div class="zone-header">
+                        <div class="zone-icon">🤝</div>
+                        <div class="zone-title">
+                            <h2>Strategic Partnership</h2>
+                            <p class="zone-subtitle">"What can we build together?"</p>
+                        </div>
+                    </div>
+                    <div class="drop-zone" id="strategicZone" ondrop="drop(event, 'strategic')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                        <p style="opacity: 0.5; text-align: center;">Drop capability building scenarios here</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="check-button" onclick="checkAnswers()">Check My Partnerships! 🎯</button>
+
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <div id="learnMode" style="display: none;">
+            <div class="info-box" style="border-color: #ff6b6b;">
+                <h3 style="color: #ff6b6b; margin-bottom: 15px;">🆘 Mutual Aid Agreements (Crisis Response)</h3>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 10px;">✓ <strong>Purpose:</strong> Resource sharing during emergencies</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Activation:</strong> Crisis-driven with specific protocols</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Timeline:</strong> Short-term deployment during incidents</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Example:</strong> Requesting firefighters during wildfire season</li>
+                </ul>
+            </div>
+
+            <div class="info-box" style="border-color: #4ecdc4;">
+                <h3 style="color: #4ecdc4; margin-bottom: 15px;">🤝 Strategic Partnerships (Capability Building)</h3>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 10px;">✓ <strong>Purpose:</strong> Long-term capability enhancement</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Activation:</strong> Ongoing collaboration</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Timeline:</strong> Sustained cooperation over years</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Example:</strong> Multi-year partnership for grid resilience</li>
+                </ul>
+            </div>
+
+            <div class="info-box" style="border-color: #ffd93d;">
+                <h3 style="color: #ffd93d; margin-bottom: 15px;">💡 Key Insight</h3>
+                <p>Think of strategic partnerships as "mutual aid for capability building" - instead of sharing resources during emergencies, you're sharing capabilities during ongoing development!</p>
+            </div>
+
+            <button class="check-button" onclick="showConcept('game')">Back to Game 🎮</button>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = [
+            { id: 1, text: "County requests firefighting personnel during active wildfire", type: "mutual-aid", icon: "🔥" },
+            { id: 2, text: "3-year collaboration with utilities for grid resilience", type: "strategic", icon: "⚡" },
+            { id: 3, text: "Emergency equipment loan during flood response", type: "mutual-aid", icon: "🌊" },
+            { id: 4, text: "Regional coalition develops shared alert system", type: "strategic", icon: "📢" },
+            { id: 5, text: "State provides personnel for hurricane response", type: "mutual-aid", icon: "🌀" },
+            { id: 6, text: "Public-private partnership for communication network", type: "strategic", icon: "📡" },
+            { id: 7, text: "Neighboring county shares ambulances during mass casualty", type: "mutual-aid", icon: "🚑" },
+            { id: 8, text: "Multi-sector initiative for community resilience training", type: "strategic", icon: "🎓" }
+        ];
+
+        let placedCards = {};
+        let correctCount = 0;
+
+        function initializeGame() {
+            const container = document.getElementById('scenarioCards');
+            container.innerHTML = '';
+            
+            // Shuffle scenarios
+            const shuffled = [...scenarios].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach(scenario => {
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.id = `card-${scenario.id}`;
+                card.draggable = true;
+                card.ondragstart = (e) => dragStart(e, scenario.id);
+                card.ondragend = dragEnd;
+                card.innerHTML = `${scenario.icon} ${scenario.text}`;
+                container.appendChild(card);
+            });
+            
+            // Reset zones
+            document.getElementById('mutualAidZone').innerHTML = '<p style="opacity: 0.5; text-align: center;">Drop crisis response scenarios here</p>';
+            document.getElementById('strategicZone').innerHTML = '<p style="opacity: 0.5; text-align: center;">Drop capability building scenarios here</p>';
+            
+            // Reset tracking
+            placedCards = {};
+            correctCount = 0;
+            updateScore();
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        function dragStart(e, scenarioId) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('scenarioId', scenarioId);
+            e.target.classList.add('dragging');
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function dragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(e, zoneType) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const scenarioId = parseInt(e.dataTransfer.getData('scenarioId'));
+            const scenario = scenarios.find(s => s.id === scenarioId);
+            const card = document.getElementById(`card-${scenarioId}`);
+            
+            if (card && scenario) {
+                // Remove placeholder text if it exists
+                const placeholder = e.currentTarget.querySelector('p');
+                if (placeholder) placeholder.remove();
+                
+                // Create dropped card
+                const droppedCard = document.createElement('div');
+                droppedCard.className = 'scenario-card dropped-card';
+                droppedCard.innerHTML = `${scenario.icon} ${scenario.text}`;
+                e.currentTarget.appendChild(droppedCard);
+                
+                // Remove original card
+                card.remove();
+                
+                // Track placement
+                placedCards[scenarioId] = zoneType;
+                
+                // Update progress
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const placed = Object.keys(placedCards).length;
+            const total = scenarios.length;
+            const percentage = (placed / total) * 100;
+            document.getElementById('progress').style.width = `${percentage}%`;
+        }
+
+        function updateScore() {
+            const total = scenarios.length;
+            const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+            
+            document.getElementById('correct').textContent = correctCount;
+            document.getElementById('total').textContent = total;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+        }
+
+        function checkAnswers() {
+            let correct = 0;
+            let feedback = '';
+            
+            scenarios.forEach(scenario => {
+                if (placedCards[scenario.id]) {
+                    const isCorrect = placedCards[scenario.id] === scenario.type;
+                    if (isCorrect) {
+                        correct++;
+                    }
+                }
+            });
+            
+            correctCount = correct;
+            updateScore();
+            
+            const percentage = Math.round((correct / scenarios.length) * 100);
+            const feedbackDiv = document.getElementById('feedback');
+            
+            if (percentage === 100) {
+                feedbackDiv.className = 'feedback correct show';
+                feedbackDiv.innerHTML = `
+                    <h3>🎉 Perfect Score!</h3>
+                    <p>Outstanding! You've mastered the difference between Mutual Aid and Strategic Partnerships!</p>
+                    <p style="margin-top: 15px;">Remember: <strong>Mutual Aid</strong> = Crisis Response | <strong>Strategic Partnerships</strong> = Capability Building</p>
+                `;
+            } else if (percentage >= 75) {
+                feedbackDiv.className = 'feedback correct show';
+                feedbackDiv.innerHTML = `
+                    <h3>✅ Great Job!</h3>
+                    <p>You got ${correct} out of ${scenarios.length} correct (${percentage}%)!</p>
+                    <p style="margin-top: 15px;">You're well on your way to mastering cross-sector partnerships!</p>
+                `;
+            } else {
+                feedbackDiv.className = 'feedback incorrect show';
+                feedbackDiv.innerHTML = `
+                    <h3>📚 Keep Learning!</h3>
+                    <p>You got ${correct} out of ${scenarios.length} correct (${percentage}%).</p>
+                    <p style="margin-top: 15px;">Try again! Remember: Crisis response = Mutual Aid, Long-term building = Strategic Partnership</p>
+                `;
+            }
+            
+            // Add reset button
+            feedbackDiv.innerHTML += '<button class="check-button" onclick="initializeGame()" style="margin-top: 20px;">Try Again 🔄</button>';
+        }
+
+        function showConcept(mode) {
+            const gameMode = document.getElementById('gameMode');
+            const learnMode = document.getElementById('learnMode');
+            const buttons = document.querySelectorAll('.toggle-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (mode === 'game') {
+                gameMode.style.display = 'block';
+                learnMode.style.display = 'none';
+                buttons[0].classList.add('active');
+            } else {
+                gameMode.style.display = 'none';
+                learnMode.style.display = 'block';
+                buttons[1].classList.add('active');
+            }
+        }
+
+        // Initialize game on load
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
